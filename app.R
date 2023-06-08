@@ -145,7 +145,8 @@ ui <- fluidPage(
     mainPanel(width = 12,
     "¿Qué tanto los empresarios ven a los sindicalistas de una manera negativa y  a si mismos de manera positiva? ¿Qué tanto pasa lo contrario entre los sindicalistas? Hablamos de polarización afectiva cuando un grupo se ve a sí mismo de manera positiva y al otro de manera negativa. Esta herramienta te permite observar qué tanta polarización afectiva existe entre el Sector Privado y los Sindicalistas en Argentina, Brasil, Colombia y México. Para esto usé los datos recolectados por Sensata UX Research, en su proyecto Tejiendo Puentes.",
     tags$a(href="https://sensata.io/es/tejiendo-puentes", 
-           "Ve a la página"), " del proyecto para tener más información de los datos (más de 10.000 encuestas virtuales), el proyecto y las preguntas.",
+           "Ve a la página"), " del proyecto para tener más información de los datos (más de 10.000 encuestas virtuales), el proyecto y las preguntas. El código para generar esta app está disponible",
+    tags$a(href="https://github.com/gaborio/polariApp", "acá"),
       plotOutput("plot"),
       textOutput("text"),
     )
