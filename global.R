@@ -32,43 +32,120 @@ library(showtext)
 library(DT)
 
 # Load fonts ---------------------------
-font_add_google(name = "Open Sans", family = "Open Sans")
-font_add_google(name = "Lato", family = "Lato")
+font_add_google(name = "Source Sans Pro", family = "Source Sans Pro")
+font_add_google(name = "Roboto", family = "Roboto")
 showtext_auto()
+
+# Define colors from awesome-cv --------
+awesome_colors <- list(
+  white = "#FFFFFF",
+  black = "#000000",
+  darkgray = "#333333",
+  gray = "#5D5D5D",
+  lightgray = "#999999",
+  awesome_red = "#DC3522",
+  awesome_skyblue = "#0395DE",
+  awesome_emerald = "#00A388",
+  awesome_pink = "#EF4089",
+  awesome_orange = "#FF6138",
+  awesome_nephritis = "#27AE60",
+  awesome_concrete = "#95A5A6",
+  awesome_darknight = "#131A28"
+)
 
 # Define the visualization theme -------
 viztheme <- theme(
-  text = element_text(family = "Open Sans"),
-  axis.title = element_text(colour = "white", size = 11, face = "bold"),
-  axis.text.x = element_text(colour = "white", size = 10),
-  axis.text.y = element_text(colour = "white", size = 10),
-  legend.text = element_text(colour = "white", size = 10),
-  legend.title = element_text(colour = "white", size = 11, face = "bold"),
+  text = element_text(family = "Source Sans Pro"),
+  axis.title = element_text(
+    colour = awesome_colors$gray, 
+    size = 11, 
+    face = "bold",
+    family = "Roboto"
+  ),
+  axis.text.x = element_text(
+    colour = awesome_colors$gray, 
+    size = 10,
+    family = "Source Sans Pro"
+  ),
+  axis.text.y = element_text(
+    colour = awesome_colors$gray, 
+    size = 10,
+    family = "Source Sans Pro"
+  ),
+  legend.text = element_text(
+    colour = awesome_colors$gray, 
+    size = 10,
+    family = "Source Sans Pro"
+  ),
+  legend.title = element_text(
+    colour = awesome_colors$darkgray, 
+    size = 11, 
+    face = "bold",
+    family = "Roboto"
+  ),
   plot.title = element_text(
-    family = "Lato",
-    colour = "white",
+    family = "Roboto",
+    colour = awesome_colors$darkgray,
     size = 14,
     face = "bold",
     hjust = 0
   ),
-  plot.caption = element_text(colour = "gray80", size = 8),
-  plot.subtitle = element_text(family = "Lato", colour = "white", size = 11),
-  panel.background = element_rect(linewidth = 0, fill = "#424242"),
-  plot.background = element_rect(fill = "#333333"),
+  plot.caption = element_text(
+    colour = awesome_colors$lightgray, 
+    size = 8,
+    family = "Source Sans Pro"
+  ),
+  plot.subtitle = element_text(
+    family = "Source Sans Pro", 
+    colour = awesome_colors$gray, 
+    size = 11
+  ),
+  panel.background = element_rect(
+    linewidth = 0, 
+    fill = awesome_colors$white
+  ),
+  plot.background = element_rect(
+    fill = awesome_colors$white
+  ),
   panel.grid.major = element_line(
-    linewidth = 0.5, linetype = "dotted",
-    colour = "gray75"
+    linewidth = 0.5, 
+    linetype = "dotted",
+    colour = awesome_colors$lightgray
   ),
   panel.grid.minor = element_blank(),
-  legend.key = element_rect(fill = "transparent", colour = "transparent"),
+  legend.key = element_rect(
+    fill = "transparent", 
+    colour = "transparent"
+  ),
   panel.grid.major.x = element_blank(),
   legend.position = "bottom",
-  legend.background = element_rect(fill = "#333333", color = NA),
-  legend.box.background = element_rect(fill = "#333333"),
-  strip.background = element_rect(fill = "#555555"),
-  strip.text = element_text(colour = "white", size = 11, face = "bold")
+  legend.background = element_rect(
+    fill = awesome_colors$white, 
+    color = NA
+  ),
+  legend.box.background = element_rect(
+    fill = awesome_colors$white
+  ),
+  strip.background = element_rect(
+    fill = awesome_colors$gray
+  ),
+  strip.text = element_text(
+    colour = awesome_colors$white, 
+    size = 11, 
+    face = "bold",
+    family = "Roboto"
+  )
 )
 
+# Create custom color scales for plots
+custom_color_scale <- scale_color_manual(
+  values = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", 
+             "#0072B2", "#D55E00", "#CC79A7"))
+
+custom_fill_scale <- scale_fill_manual(
+  c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", 
+    "#0072B2", "#D55E00", "#CC79A7")
+)
 # Load and process data ----------
 empre_data <- readRDS("data/afectoEmpresarios.rds") |> droplevels()
 empre_data$Grupo <- "Sector privado"
@@ -80,7 +157,7 @@ data <- empre_data |> bind_rows(sindi_data)
 data$Pregunta <- data$Pregunta |> recode(
   "Confia que cumplen normas de tránsito" = "Cumplen normas tránsito",
   "Confia que pagan salarios justos" = "Pagan salarios justos",
-  "Estaría feliz de que sus hijos sean amigos" = "Feliz cercanía social"
+  "Estaría feliz de que sus hijos sean amigos" = "Cercanía social"
 )
 
 data$Grupo2 <- data$Grupo2 |>
@@ -103,7 +180,6 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
   filtered_data <- filter(data, Pais == country)
   
   if (view_type == "difference") {
-    # Create a comparison dataset showing differences between groups
     base_plot <- ggplot(filtered_data, aes(x = Grupo2, y = mean, fill = Grupo)) +
       geom_col(position = "dodge", width = 0.7, alpha = 0.9) +
       geom_text(
@@ -111,11 +187,11 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
         position = position_dodge(width = 0.7),
         vjust = -0.5,
         size = 3.5,
-        color = "white",
-        family = "Lato"
+        color = awesome_colors$gray,
+        family = "Source Sans Pro"
       ) +
       facet_wrap(~Pregunta, ncol = 3) +
-      scale_fill_brewer(palette = "Set1") +
+      custom_fill_scale +
       labs(
         title = paste("Comparación de percepciones entre empresarios y sindicalistas en", country),
         subtitle = "Porcentaje de respuestas positivas por grupo",
@@ -129,12 +205,8 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
       ylim(0, 100)
     
   } else {
-    # Original lollipop chart with improved styling
     base_plot <- ggplot(filtered_data, aes(x = Grupo2, y = mean)) +
-      geom_point(
-        size = 3,
-        aes(colour = Pregunta)
-      ) +
+      geom_point(size = 3, aes(colour = Pregunta)) +
       geom_segment(
         aes(
           x = Grupo2,
@@ -147,15 +219,14 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
         linewidth = 1.2
       ) +
       geom_text(
-        aes(
-          label = paste0(round(mean, 1), "%")
-        ),
+        aes(label = paste0(round(mean, 1), "%")),
         nudge_y = 5,
         size = 3.5,
-        color = "white",
-        family = "Lato"
+        color = awesome_colors$gray,
+        family = "Source Sans Pro"
       ) +
       facet_grid(cols = vars(Pregunta), rows = vars(Grupo)) +
+      custom_color_scale +
       labs(
         title = paste("Polarización afectiva entre empresarios y sindicalistas en", country),
         subtitle = "Porcentaje de respuesta de las dos opciones más positivas",
@@ -165,22 +236,38 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
       ) +
       theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
       viztheme +
-      scale_colour_brewer(palette = "Set2") +
       ylim(0, 100)
   }
   
-  # Convert to interactive plotly
+  # Convert to interactive plotly with custom styling
   interactive_plot <- ggplotly(base_plot, tooltip = c("x", "y", "colour", "group"))
   
-  # Improve tooltips
   interactive_plot <- interactive_plot %>% 
     layout(
-      hoverlabel = list(
-        bgcolor = "#333333",
-        bordercolor = "white",
-        font = list(family = "Lato", size = 12, color = "white")
+      paper_bgcolor = awesome_colors$white,
+      plot_bgcolor = awesome_colors$white,
+      font = list(
+        family = "Source Sans Pro",
+        color = awesome_colors$gray
       ),
-      legend = list(orientation = "h", y = -0.2)
+      hoverlabel = list(
+        bgcolor = awesome_colors$white,
+        bordercolor = awesome_colors$gray,
+        font = list(
+          family = "Source Sans Pro",
+          size = 12,
+          color = awesome_colors$gray
+        )
+      ),
+      legend = list(
+        orientation = "h",
+        y = -0.2,
+        bgcolor = awesome_colors$white,
+        font = list(
+          family = "Source Sans Pro",
+          color = awesome_colors$gray
+        )
+      )
     )
   
   return(interactive_plot)

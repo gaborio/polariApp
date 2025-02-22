@@ -78,23 +78,25 @@ server <- function(input, output, session) {
       
       # Format insights
       insights <- HTML(paste0(
-        "<p><strong>Nivel de polarización:</strong> ", nivel_polarizacion, "</p>",
+        "<div style='font-family: \"Source Sans Pro\", sans-serif; color: var(--awesome-gray);'>",
+        "<p><strong style='color: var(--awesome-darkgray);'>Nivel de polarización:</strong> ", 
+        nivel_polarizacion, "</p>",
         
-        "<p><strong>Sector privado:</strong> Ve a los empresarios formales con un <strong>",
+        "<p><strong style='color: var(--awesome-darkgray);'>Sector privado:</strong> Ve a los empresarios formales con un <strong style='color: var(--awesome-red);'>",
         round(private_self_view, 1), 
-        "%</strong> de valoración positiva, mientras que los ciudadanos los ven <strong>",
+        "%</strong> de valoración positiva, mientras que los ciudadanos los ven <strong style='color: var(--awesome-skyblue);'>",
         round(private_citizen_view, 1), 
         "%</strong> (diferencia de ", 
         round(private_polarization, 1), " puntos).</p>",
         
-        "<p><strong>Los ciudadanos:</strong> ven a los sindicalistas con un <strong>",
+        "<p><strong style='color: var(--awesome-darkgray);'>Los ciudadanos:</strong> ven a los sindicalistas con un <strong style='color: var(--awesome-emerald);'>",
         round(union_citizen_view, 1),
-        "%</strong> de valoración positiva, mientras que a los empresarios formales con un <strong>",
+        "%</strong> de valoración positiva, mientras que a los empresarios formales con un <strong style='color: var(--awesome-skyblue);'>",
         round(union_private_view, 1),
         "%</strong> (diferencia de ",
         round(union_polarization, 1), " puntos).</p>",
         
-        "<p><strong>Observación clave:</strong> ",
+        "<p><strong style='color: var(--awesome-darkgray);'>Observación clave:</strong> ",
         if (abs(private_polarization - union_polarization) < 5) {
           "Ambos grupos muestran niveles similares de polarización afectiva."
         } else if (private_polarization > union_polarization) {
@@ -102,14 +104,14 @@ server <- function(input, output, session) {
         } else {
           "Los sindicalistas muestran mayor polarización afectiva que el sector privado."
         },
-        "</p>"
+        "</p>",
+        "</div>"
       ))
       
       return(insights)
       
     }, error = function(e) {
-      # Return a friendly message if there's any error
-      return(HTML("<p>Hubo un error al procesar los datos para la interpretación.</p>"))
+      return(HTML("<p style='font-family: \"Source Sans Pro\", sans-serif; color: var(--awesome-gray);'>Hubo un error al procesar los datos para la interpretación.</p>"))
     })
   }
   
@@ -135,7 +137,11 @@ server <- function(input, output, session) {
         buttons = c('copy', 'csv', 'excel'),
         initComplete = JS(
           "function(settings, json) {",
-          "$(this.api().table().header()).css({'background-color': '#424242', 'color': 'white'});",
+          "$(this.api().table().header()).css({",
+          "'background-color': 'var(--awesome-white)',", 
+          "'color': 'var(--awesome-darkgray)',",
+          "'font-family': '\"Roboto\", sans-serif'",
+          "});",
           "}"
         )
       ),
@@ -163,30 +169,7 @@ server <- function(input, output, session) {
       paste("grafica-polarizacion-", input$Pais, "-", Sys.Date(), ".png", sep = "")
     },
     content = function(file) {
-      # Create static ggplot for download (higher quality than plotly export)
-      p <- ggplot(filter(data, Pais == input$Pais), aes(x = Grupo2, y = mean)) +
-        geom_point(size = 3, aes(colour = Pregunta)) +
-        geom_segment(
-          aes(x = Grupo2, xend = Grupo2, y = 0, yend = mean, colour = Pregunta),
-          alpha = 0.85, linewidth = 1.2
-        ) +
-        geom_text(
-          aes(label = paste0(round(mean, 1), "%")),
-          nudge_y = 5, size = 3.5, color = "white", family = "Lato"
-        ) +
-        facet_grid(cols = vars(Pregunta), rows = vars(Grupo)) +
-        labs(
-          title = paste("Polarización afectiva entre empresarios y sindicalistas en", input$Pais),
-          subtitle = "Porcentaje de respuesta de las dos opciones más positivas",
-          x = "Grupo de la población evaluado",
-          y = "Porcentaje de respuestas positivas (%)",
-          caption = paste("Datos de", sample_sizes[[input$Pais]], "encuestas del proyecto Tejiendo Puentes")
-        ) +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-        viztheme +
-        scale_colour_brewer(palette = "Set2") +
-        ylim(0, 100)
-      
+      p <- create_interactive_plot(input$Pais, data, input$vizType)
       ggsave(file, plot = p, width = 10, height = 8, dpi = 300)
     }
   )
