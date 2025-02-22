@@ -72,10 +72,7 @@ ui <- fluidPage(
   
   # Application title with logo
   navbarPage(
-    title = div(
-      img(src = "https://sensata.io/images/sensata-logo.png", height = "30px", style = "margin-right: 10px;"),
-      "Polarización Afectiva en América Latina"
-    ),
+    title = "Polarización Afectiva en América Latina",
     
     # First tab: Visualization
     tabPanel("Visualización",

@@ -13,43 +13,104 @@ server <- function(input, output, session) {
   
   # Generate insights based on the country data
   get_insights <- function(country) {
+    # Get data for the selected country
     country_data <- filter(data, Pais == country)
     
-    # Calculate polarization metrics
-    private_self_view <- mean(filter(country_data, Grupo == "Sector privado" & Grupo2 == "Empresarios formales")$mean)
-    private_union_view <- mean(filter(country_data, Grupo == "Sector privado" & Grupo2 == "Sindicalistas")$mean)
-    union_self_view <- mean(filter(country_data, Grupo == "Sindicalistas" & Grupo2 == "Sindicalistas")$mean) 
-    union_private_view <- mean(filter(country_data, Grupo == "Sindicalistas" & Grupo2 == "Empresarios formales")$mean)
-    
-    private_polarization <- private_self_view - private_union_view
-    union_polarization <- union_self_view - union_private_view
-    
-    # Format insights based on data
-    insights <- HTML(paste0(
-      "<p><strong>Nivel de polarización:</strong> ",
-      if(mean(c(private_polarization, union_polarization)) > 40) "Alto" else 
-        if(mean(c(private_polarization, union_polarization)) > 20) "Moderado" else "Bajo",
-      "</p>",
+    # Calculate metrics with error checking
+    tryCatch({
+      # Views about the private sector
+      private_self_data <- filter(country_data, 
+                                  Grupo == "Sector privado" & 
+                                    Grupo2 == "Sector privado")
+      private_informal_data <- filter(country_data, 
+                                      Grupo == "Sector privado" & 
+                                        Grupo2 == "Emp. informales")
+      private_students_data <- filter(country_data, 
+                                      Grupo == "Sector privado" & 
+                                        Grupo2 == "Estudiantes")
+      private_leaders_data <- filter(country_data, 
+                                     Grupo == "Sector privado" & 
+                                       Grupo2 == "Líderes soc.")
+      private_citizen_data <- filter(country_data, 
+                                     Grupo == "Sector privado" & 
+                                       Grupo2 == "Ciudadanos")
       
-      "<p><strong>Sector privado:</strong> Ve a los empresarios formales con un <strong>", round(private_self_view, 1), 
-      "%</strong> de valoración positiva, mientras que a los sindicalistas con un <strong>", 
-      round(private_union_view, 1), "%</strong> (diferencia de ", round(private_polarization, 1), " puntos).</p>",
+      # View about the unions
+      union_private_data <- filter(country_data, 
+                                   Grupo == "Sindicalistas" & 
+                                     Grupo2 == "Sector privado")
+      union_students_data <- filter(country_data, 
+                                    Grupo == "Sindicalistas" & 
+                                      Grupo2 == "Estudiantes")
+      union_informals_data <- filter(country_data, 
+                                     Grupo == "Sindicalistas" & 
+                                       Grupo2 == "Empresarios informales")
+      union_leaders_data <- filter(country_data, 
+                                   Grupo == "Sindicalistas" & 
+                                     Grupo2 == "Líderes sociales")
+      union_citizen_data <- filter(country_data, 
+                                   Grupo == "Sindicalistas" & 
+                                     Grupo2 == "Ciudadanos")
       
-      "<p><strong>Sindicalistas:</strong> Se ven a sí mismos con un <strong>", round(union_self_view, 1), 
-      "%</strong> de valoración positiva, mientras que a los empresarios formales con un <strong>", 
-      round(union_private_view, 1), "%</strong> (diferencia de ", round(union_polarization, 1), " puntos).</p>",
+      # Check if we have data for all groups
+      if (nrow(private_self_data) == 0 || nrow(private_citizen_data) == 0 ||
+          nrow(union_private_data) == 0 || nrow(union_citizen_data) == 0) {
+        return(HTML("<p>No hay datos suficientes para generar interpretaciones para este país.</p>"))
+      }
       
-      "<p><strong>Observación clave:</strong> ", 
-      if(private_polarization > union_polarization) 
-        "El sector privado muestra mayor polarización afectiva que los sindicalistas." 
-      else if(union_polarization > private_polarization) 
-        "Los sindicalistas muestran mayor polarización afectiva que el sector privado."
-      else 
-        "Ambos grupos muestran niveles similares de polarización afectiva.",
-      "</p>"
-    ))
-    
-    return(insights)
+      # Calculate means
+      private_self_view <- mean(private_self_data$mean, na.rm = TRUE)
+      private_citizen_view <- mean(private_citizen_data$mean, na.rm = TRUE)
+      union_private_view <- mean(union_private_data$mean, na.rm = TRUE)
+      union_citizen_view <- mean(union_citizen_data$mean, na.rm = TRUE)
+      
+      # Calculate polarization
+      private_polarization <- private_self_view - private_citizen_view
+      union_polarization <- union_private_view - union_citizen_view
+      avg_polarization <- mean(c(private_polarization, union_polarization))
+      
+      # Determine polarization level
+      nivel_polarizacion <- case_when(
+        avg_polarization > 40 ~ "Alto",
+        avg_polarization > 20 ~ "Moderado",
+        TRUE ~ "Bajo"
+      )
+      
+      # Format insights
+      insights <- HTML(paste0(
+        "<p><strong>Nivel de polarización:</strong> ", nivel_polarizacion, "</p>",
+        
+        "<p><strong>Sector privado:</strong> Ve a los empresarios formales con un <strong>",
+        round(private_self_view, 1), 
+        "%</strong> de valoración positiva, mientras que los ciudadanos los ven <strong>",
+        round(private_citizen_view, 1), 
+        "%</strong> (diferencia de ", 
+        round(private_polarization, 1), " puntos).</p>",
+        
+        "<p><strong>Los ciudadanos:</strong> ven a los sindicalistas con un <strong>",
+        round(union_citizen_view, 1),
+        "%</strong> de valoración positiva, mientras que a los empresarios formales con un <strong>",
+        round(union_private_view, 1),
+        "%</strong> (diferencia de ",
+        round(union_polarization, 1), " puntos).</p>",
+        
+        "<p><strong>Observación clave:</strong> ",
+        if (abs(private_polarization - union_polarization) < 5) {
+          "Ambos grupos muestran niveles similares de polarización afectiva."
+        } else if (private_polarization > union_polarization) {
+          "El sector privado muestra mayor polarización afectiva que los sindicalistas."
+        } else {
+          "Los sindicalistas muestran mayor polarización afectiva que el sector privado."
+        },
+        "</p>"
+      ))
+      
+      return(insights)
+      
+    }, error = function(e) {
+      # Return a friendly message if there's any error
+      return(HTML("<p>Hubo un error al procesar los datos para la interpretación.</p>"))
+    })
   }
   
   # Render the plot
