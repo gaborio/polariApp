@@ -1,8 +1,0 @@
-shiny==1.10.0
-shinythemes==1.2.0
-tidyverse==2.0.0
-plotly==4.10.4
-DT==0.17
-showtext==0.9-7
-shinyWidgets==0.9.0
-checkmate==2.0.0
