@@ -25,7 +25,6 @@
 # Load required packages --------------
 library(shiny)
 library(shinythemes)
-library(sensataDataAnalysis)
 library(tidyverse)
 library(shinyWidgets)
 library(plotly)
