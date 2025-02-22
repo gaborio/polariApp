@@ -58,47 +58,47 @@ viztheme <- theme(
   text = element_text(family = "Source Sans Pro"),
   axis.title = element_text(
     colour = awesome_colors$gray, 
-    size = 11, 
+    size = 9, 
     face = "bold",
     family = "Roboto"
   ),
   axis.text.x = element_text(
     colour = awesome_colors$gray, 
-    size = 10,
+    size = 8,
     family = "Source Sans Pro"
   ),
   axis.text.y = element_text(
     colour = awesome_colors$gray, 
-    size = 10,
+    size = 8,
     family = "Source Sans Pro"
   ),
   legend.text = element_text(
     colour = awesome_colors$gray, 
-    size = 10,
+    size = 8,
     family = "Source Sans Pro"
   ),
   legend.title = element_text(
     colour = awesome_colors$darkgray, 
-    size = 11, 
+    size = 9, 
     face = "bold",
     family = "Roboto"
   ),
   plot.title = element_text(
     family = "Roboto",
     colour = awesome_colors$darkgray,
-    size = 14,
+    size = 12,
     face = "bold",
     hjust = 0
   ),
   plot.caption = element_text(
     colour = awesome_colors$lightgray, 
-    size = 8,
+    size = 6,
     family = "Source Sans Pro"
   ),
   plot.subtitle = element_text(
     family = "Source Sans Pro", 
     colour = awesome_colors$gray, 
-    size = 11
+    size = 9
   ),
   panel.background = element_rect(
     linewidth = 0, 
@@ -131,7 +131,7 @@ viztheme <- theme(
   ),
   strip.text = element_text(
     colour = awesome_colors$white, 
-    size = 11, 
+    size = 9, 
     face = "bold",
     family = "Roboto"
   )
@@ -143,9 +143,8 @@ custom_color_scale <- scale_color_manual(
              "#0072B2", "#D55E00", "#CC79A7"))
 
 custom_fill_scale <- scale_fill_manual(
-  c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", 
-    "#0072B2", "#D55E00", "#CC79A7")
-)
+  values = c("#E69F00", "#56B4E9","#999999",  "#009E73", "#F0E442",
+             "#0072B2", "#D55E00", "#CC79A7"))
 # Load and process data ----------
 empre_data <- readRDS("data/afectoEmpresarios.rds") |> droplevels()
 empre_data$Grupo <- "Sector privado"
@@ -182,14 +181,20 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
   if (view_type == "difference") {
     base_plot <- ggplot(filtered_data, aes(x = Grupo2, y = mean, fill = Grupo)) +
       geom_col(position = "dodge", width = 0.7, alpha = 0.9) +
-      geom_text(
-        aes(label = paste0(round(mean, 1), "%")),
+      geom_errorbar(
+        aes(ymin = mean - ci, ymax = mean + ci),
         position = position_dodge(width = 0.7),
-        vjust = -0.5,
-        size = 3.5,
-        color = awesome_colors$gray,
-        family = "Source Sans Pro"
+        width = 0.1,
+        color = awesome_colors$lightgray
       ) +
+      #geom_text(
+      #  aes(label = paste0(round(mean, 1), "%")),
+      #  position = position_dodge(width = 0.7),
+      #  vjust = -0.5,
+      #  size = 2,
+      #  color = awesome_colors$gray,
+      #  family = "Source Sans Pro"
+      #) +
       facet_wrap(~Pregunta, ncol = 3) +
       custom_fill_scale +
       labs(
@@ -221,7 +226,7 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
       geom_text(
         aes(label = paste0(round(mean, 1), "%")),
         nudge_y = 5,
-        size = 3.5,
+        size = 2.7,
         color = awesome_colors$gray,
         family = "Source Sans Pro"
       ) +
@@ -255,7 +260,7 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
         bordercolor = awesome_colors$gray,
         font = list(
           family = "Source Sans Pro",
-          size = 12,
+          size = 10,
           color = awesome_colors$gray
         )
       ),

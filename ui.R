@@ -10,7 +10,7 @@
 #==============================================================================#
 
 ui <- fluidPage(
-  theme = shinytheme("flatly"), # Using flatly as base theme for clean look
+  theme = shinytheme("flatly"), 
   
   tags$head(
     tags$link(rel = "stylesheet", 
