@@ -147,17 +147,28 @@ custom_fill_scale <- scale_fill_manual(
              "#0072B2", "#D55E00", "#CC79A7"))
 # Load and process data ----------
 empre_data <- readRDS("data/afectoEmpresarios.rds") |> droplevels()
-empre_data$Grupo <- "Sector privado"
+empre_data$Grupo <- "Grandes empresarios"
 sindi_data <- readRDS("data/afectoSindicalistas.rds") |> droplevels()
 sindi_data$Grupo <- "Sindicalistas"
 data <- empre_data |> bind_rows(sindi_data)
 
 # Improved labels for better clarity ----
+
+
 data$Pregunta <- data$Pregunta |> recode(
-  "Confia que cumplen normas de tránsito" = "Cumplen normas tránsito",
-  "Confia que pagan salarios justos" = "Pagan salarios justos",
-  "Estaría feliz de que sus hijos sean amigos" = "Cercanía social"
+  "Confia que cumplen normas de tránsito" = "Cumplen normas",
+  "Confia que pagan salarios justos" = "Salarios justos",
+  "Estaría feliz de que sus hijos sean amigos" = "Cercanía social",
+  "Los considera solidarios" = "Solidarios",
+  "Los considera positivos" = "Opinión positiva"
 )
+
+TextoPregunta  <- list("Yo confío que los [Grupo] cumplen las normas de tránsito"= names(table(data$Pregunta))[1],
+                       "Yo confío que los [Grupo] paguen salarios justos" = names(table(data$Pregunta))[2],
+                       "Si el mejor amigo(a) de tu hijo(a) es un [Grupo], tú te sentirías [Crying-Very happy]" = names(table(data$Pregunta))[3],
+                       "La mayoría de los [Grupo] son. 1. Honestos --- 6. Deshonestos" = names(table(data$Pregunta))[4],
+                       "La mayoría de los [Grupo] son. 1. Egoístas --- 6. Solidarios" = names(table(data$Pregunta))[5],
+                       "La opinión que tienes de los [Grupo] en este país es" = names(table(data$Pregunta))[6])
 
 data$Grupo2 <- data$Grupo2 |>
   recode(
@@ -233,9 +244,9 @@ create_interactive_plot <- function(country, df, view_type = "standard") {
       facet_grid(cols = vars(Pregunta), rows = vars(Grupo)) +
       custom_color_scale +
       labs(
-        title = paste("Polarización afectiva entre empresarios y sindicalistas en", country),
+        title = paste("Opiniones hacia los grandes empresarios o los sindicalistas", country),
         subtitle = "Porcentaje de respuesta de las dos opciones más positivas",
-        x = "Grupo de la población evaluado",
+        x = "Encuestado pertenece a",
         y = "Porcentaje de respuestas positivas (%)",
         caption = paste("Datos de", sample_sizes[[country]], "encuestas del proyecto Tejiendo Puentes de Sensata UX Research")
       ) +

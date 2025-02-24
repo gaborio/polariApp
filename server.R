@@ -19,20 +19,20 @@ server <- function(input, output, session) {
     # Calculate metrics with error checking
     tryCatch({
       # Views about the private sector
-      private_self_data <- filter(country_data, 
-                                  Grupo == "Sector privado" & 
+      bigbusi_private_data <- filter(country_data, 
+                                  Grupo == "Grandes empresarios" & 
                                     Grupo2 == "Sector privado")
-      private_informal_data <- filter(country_data, 
-                                      Grupo == "Sector privado" & 
+      bigbusi_informal_data <- filter(country_data, 
+                                      Grupo == "Grandes empresarios" & 
                                         Grupo2 == "Emp. informales")
-      private_students_data <- filter(country_data, 
-                                      Grupo == "Sector privado" & 
+      bigbusi_students_data <- filter(country_data, 
+                                      Grupo == "Grandes empresarios" & 
                                         Grupo2 == "Estudiantes")
-      private_leaders_data <- filter(country_data, 
-                                     Grupo == "Sector privado" & 
+      bigbusi_leaders_data <- filter(country_data, 
+                                     Grupo == "Grandes empresarios" & 
                                        Grupo2 == "Líderes soc.")
-      private_citizen_data <- filter(country_data, 
-                                     Grupo == "Sector privado" & 
+      bigbusi_citizen_data <- filter(country_data, 
+                                     Grupo == "Grandes empresarios" & 
                                        Grupo2 == "Ciudadanos")
       
       # View about the unions
@@ -44,30 +44,30 @@ server <- function(input, output, session) {
                                       Grupo2 == "Estudiantes")
       union_informals_data <- filter(country_data, 
                                      Grupo == "Sindicalistas" & 
-                                       Grupo2 == "Empresarios informales")
+                                       Grupo2 == "Emp. informales")
       union_leaders_data <- filter(country_data, 
                                    Grupo == "Sindicalistas" & 
-                                     Grupo2 == "Líderes sociales")
+                                     Grupo2 == "Líderes soc.")
       union_citizen_data <- filter(country_data, 
                                    Grupo == "Sindicalistas" & 
                                      Grupo2 == "Ciudadanos")
       
       # Check if we have data for all groups
-      if (nrow(private_self_data) == 0 || nrow(private_citizen_data) == 0 ||
+      if (nrow(bigbusi_private_data) == 0 || nrow(bigbusi_citizen_data) == 0 ||
           nrow(union_private_data) == 0 || nrow(union_citizen_data) == 0) {
         return(HTML("<p>No hay datos suficientes para generar interpretaciones para este país.</p>"))
       }
       
       # Calculate means
-      private_self_view <- mean(private_self_data$mean, na.rm = TRUE)
-      private_citizen_view <- mean(private_citizen_data$mean, na.rm = TRUE)
+      bigbusi_private_view <- mean(bigbusi_private_data$mean, na.rm = TRUE)
+      bigbusi_citizen_view <- mean(bigbusi_citizen_data$mean, na.rm = TRUE)
       union_private_view <- mean(union_private_data$mean, na.rm = TRUE)
       union_citizen_view <- mean(union_citizen_data$mean, na.rm = TRUE)
       
       # Calculate polarization
-      private_polarization <- private_self_view - private_citizen_view
+      bigbusi_polarization <- bigbusi_private_view - bigbusi_citizen_view
       union_polarization <- union_private_view - union_citizen_view
-      avg_polarization <- mean(c(private_polarization, union_polarization))
+      avg_polarization <- mean(c(bigbusi_polarization, union_polarization))
       
       # Determine polarization level
       nivel_polarizacion <- case_when(
@@ -82,27 +82,27 @@ server <- function(input, output, session) {
         "<p><strong style='color: var(--awesome-darkgray);'>Nivel de polarización:</strong> ", 
         nivel_polarizacion, "</p>",
         
-        "<p><strong style='color: var(--awesome-darkgray);'>Sector privado:</strong> Ve a los empresarios formales con un <strong style='color: var(--awesome-red);'>",
-        round(private_self_view, 1), 
+        "<p><strong style='color: var(--awesome-darkgray);'>Hacia los grandes empresarios:</strong> Los miembros del sector privado ven a los grandes empresarios con un <strong style='color: var(--awesome-emerald);'>",
+        round(bigbusi_self_view, 0), 
         "%</strong> de valoración positiva, mientras que los ciudadanos los ven <strong style='color: var(--awesome-skyblue);'>",
-        round(private_citizen_view, 1), 
+        round(bigbusi_citizen_view, 0), 
         "%</strong> (diferencia de ", 
-        round(private_polarization, 1), " puntos).</p>",
+        round(bigbusi_polarization, 0), " puntos).</p>",
         
-        "<p><strong style='color: var(--awesome-darkgray);'>Los ciudadanos:</strong> ven a los sindicalistas con un <strong style='color: var(--awesome-emerald);'>",
-        round(union_citizen_view, 1),
-        "%</strong> de valoración positiva, mientras que a los empresarios formales con un <strong style='color: var(--awesome-skyblue);'>",
-        round(union_private_view, 1),
+        "<p><strong style='color: var(--awesome-darkgray);'Hacia los sindicalistas:</strong> El sector privado ve a los sindicalistas con un <strong style='color: var(--awesome-emerald);'>",
+        round(union_private_view, 0),
+        "%</strong> de valoración positiva, mientras que ciudadanos con un <strong style='color: var(--awesome-skyblue);'>",
+        round(union_private_view, 0),
         "%</strong> (diferencia de ",
-        round(union_polarization, 1), " puntos).</p>",
+        round(union_polarization, 0), " puntos).</p>",
         
         "<p><strong style='color: var(--awesome-darkgray);'>Observación clave:</strong> ",
-        if (abs(private_polarization - union_polarization) < 5) {
+        if (abs(bigbusi_polarization - union_polarization) < 5) {
           "Ambos grupos muestran niveles similares de polarización afectiva."
-        } else if (private_polarization > union_polarization) {
-          "El sector privado muestra mayor polarización afectiva que los sindicalistas."
+        } else if (bigbusi_polarization > union_polarization) {
+          "Hay mayor polarización afectiva hacia los grandes empresarios que hacia los sindicalistas."
         } else {
-          "Los sindicalistas muestran mayor polarización afectiva que el sector privado."
+          "Hay mayor polarización afectiva hacia los sindicalistas que hacia los grandes empresarios."
         },
         "</p>",
         "</div>"
